@@ -1,58 +1,50 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
 class User(AbstractUser):
-
-    USER = 'user'
-    MODERATOR = 'moderator'
     ADMIN = 'admin'
-
-    USER_ROLES = [
-        (USER, 'Пользователь'),
-        (MODERATOR, 'Модератор'),
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = (
         (ADMIN, 'Администратор'),
-    ]
-    username = models.CharField(
-        max_length=150,
-        unique=True,
-    )
-    email = models.EmailField(
-        max_length=254,
-        unique=True,
-    )
-    first_name = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name='имя пользователя'
-    )
-    last_name = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name='фамилия пользователя'
+        (MODERATOR, 'Модератор'),
+        (USER, 'Пользователь')
     )
     bio = models.TextField(
         verbose_name='Биография',
-        blank=True,
+        blank=True
+    )
+    email = models.EmailField(
+        verbose_name='E-mail',
+        null=False,
+        blank=False,
+        max_length=254,
+        unique=True
     )
     role = models.CharField(
-        verbose_name='Роль пользователя',
-        max_length=25,
-        choices=USER_ROLES,
-        default='user',
-    )
-    confirmation_code = models.CharField(
-        max_length=250,
-        blank=True,
+        max_length=settings.DEFAULT_FIELD_SIZE,
+        choices=ROLES,
+        default=USER,
     )
 
     class Meta:
-        ordering = ('id',)
+        ordering = ('-id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='username_email'
+            ),
+        ]
 
-    def __str__(self):
-        return self.username
+    def clean(self):
+        if self.username == 'me':
+            raise ValidationError('Имя me недоступно для регистрации')
+        super(User, self).clean()
 
     @property
     def is_admin(self):
@@ -61,7 +53,3 @@ class User(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == self.MODERATOR
-
-    @property
-    def is_user(self):
-        return self.role == self.USER
