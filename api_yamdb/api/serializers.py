@@ -11,6 +11,13 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
 class TitleSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(many=True)
 
@@ -38,11 +45,3 @@ class TitleSerializer(serializers.ModelSerializer):
                 GenreTitle.objects.create(
                     genre=current_genre, title=title)
             return title
-
-
-class CategorySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Category
-        fields = '__all__'
-

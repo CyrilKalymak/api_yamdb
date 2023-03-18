@@ -15,6 +15,8 @@ class ProfileInlined(admin.TabularInline):
 class UserAdmin(BaseUserAdmin):
     inlines = (ProfileInlined,)
 
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
 # Перерегистрируем UserAdmin
 # Это позволит использовать админку с дополнительными полями вместо штатной
