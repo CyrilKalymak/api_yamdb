@@ -9,7 +9,7 @@ from .serializers import (CategorySerializer,
                           ReviewSerializer,
                           CommentSerializer)
 from rest_framework.pagination import LimitOffsetPagination
-from users.permissions import (IsAdminOrReadOnly,
+from .permissions import (IsAdminOrReadOnly,
                                IsAuthorOrIsModeratorOrAdminOrReadOnly)
 
 
@@ -17,8 +17,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (permissions.IsAdminUser,
-                          permissions.IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre', 'name', 'year')
 
@@ -27,8 +26,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete']
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (permissions.IsAdminUser,
-                          permissions.IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
@@ -38,8 +36,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete']
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (permissions.IsAdminUser,
-                          permissions.IsAuthenticatedOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
