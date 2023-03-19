@@ -1,55 +1,60 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
 from django.db import models
+
+from users.validators import username_validator
+
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
+ROLES = (
+    (ADMIN, 'Администратор'),
+    (MODERATOR, 'Модератор'),
+    (USER, 'Пользователь'),
+)
 
 
 class User(AbstractUser):
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
-    ROLES = (
-        (ADMIN, 'Администратор'),
-        (MODERATOR, 'Модератор'),
-        (USER, 'Пользователь')
+    """Создание кастомного класса User, описание базовых функций"""
+
+    username = models.CharField(
+        max_length=settings.FIELD_MAX_LENGTH,
+        unique=True,
+        db_index=True,
+        validators=[username_validator],
+        verbose_name='Никнейм'
     )
-    bio = models.TextField(
-        verbose_name='Биография',
-        blank=True
-    )
+
     email = models.EmailField(
-        verbose_name='E-mail',
-        null=False,
-        blank=False,
-        max_length=254,
-        unique=True
+        max_length=settings.FIELD_EMAIL_LENGTH,
+        unique=True,
+        verbose_name='Почта'
     )
+
+    bio = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='Биография/О пользователе',
+        help_text='Расскажите о себе'
+    )
+
     role = models.CharField(
-        max_length=settings.DEFAULT_FIELD_SIZE,
+        max_length=max([len(role) for role, name in ROLES]),
         choices=ROLES,
         default=USER,
+        verbose_name='Роль пользователя'
     )
 
-    class Meta:
-        ordering = ('-id',)
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['username', 'email'],
-                name='username_email'
-            ),
-        ]
-
-    def clean(self):
-        if self.username == 'me':
-            raise ValidationError('Имя me недоступно для регистрации')
-        super(User, self).clean()
-
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN or self.is_superuser
+    REQUIRED_FIELDS = ['email']
+    USERNAME_FIELDS = 'email'
 
     @property
     def is_moderator(self):
-        return self.role == self.MODERATOR
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN or self.is_staff
+
+    def __str__(self):
+        return self.username

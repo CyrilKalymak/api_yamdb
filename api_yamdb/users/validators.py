@@ -1,13 +1,24 @@
 import re
+
 from django.core.exceptions import ValidationError
 
+PATTERN = r'[^\w.@+-]+'
+SYMBOL_NAMES = {' ': 'пробел', ',': 'запятая', '/': 'слэш', '\\': 'бэк-слэш'}
 
-def username_validation(value):
-    if value.lower() == "me":
+
+def symbol_name(symbol):
+    return SYMBOL_NAMES.get(symbol, symbol)
+
+
+def username_validator(value):
+    if value == 'me':
         raise ValidationError(
-            "Вы не можете использовать 'me' в качестве username"
+            'Для имени пользователя нельзя использовать «me»'
         )
-    if not re.match(r'[\w.@+-]+\Z', value):
+    incorrect = list(set(''.join(re.findall(PATTERN, value))))
+    if incorrect:
         raise ValidationError(
-            'В имени пользователя недопустимые символы'
+            (f'Символы {", ".join(map(symbol_name, incorrect))} '
+             'нельзя использовать в имени')
         )
+    return value

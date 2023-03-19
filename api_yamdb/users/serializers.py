@@ -1,33 +1,50 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework import serializers
 
-User = get_user_model()
+from users.models import User
+from .validators import username_validator
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name',
-                  'bio', 'role')
+        fields = ('username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'bio',
+                  'role')
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=model.objects.all(),
+                fields=('username', 'email'),
+                message=('Пользователь с таким email уже существует')
+            )
+        ]
 
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError('me зарегистрировано системой')
-        return value
 
-    def validate_email(self, value):
-        norm_email = value.lower()
-        if User.objects.filter(email=norm_email).exists():
-            raise serializers.ValidationError('Email уже зарегистрирован')
-        return norm_email
+class SignUpSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=settings.FIELD_EMAIL_LENGTH)
+    username = serializers.CharField(max_length=settings.FIELD_MAX_LENGTH,
+                                     validators=[username_validator])
 
-
-class CreateUserSerializer(UsersSerializer):
     class Meta:
-        fields = ('username', 'email')
         model = User
+        fields = ('email', 'username')
 
 
-class JWTTokenSerializer(serializers.Serializer):
-    confirmation_code = serializers.CharField()
-    username = serializers.CharField()
+class GetTokenSerializer(serializers.Serializer):
+    """Сериализатор для получения токена."""
+    username = serializers.CharField(
+        max_length=settings.FIELD_TOKEN_LENGTH,
+        validators=[username_validator]
+    )
+    confirmation_code = serializers.CharField(
+        max_length=settings.FIELD_TOKEN_LENGTH, write_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )

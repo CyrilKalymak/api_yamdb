@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
+    'djoser',
     'api',
     'reviews',
     'users.apps.UsersConfig',
@@ -112,11 +113,13 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
 }
 
 AUTH_USER_MODEL = 'users.User'
@@ -129,3 +132,13 @@ STATIC_URL = '/static/'
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+FIELD_TEXT_LENGTH = 256
+FIELD_SLUG_LENGTH = 50
+EMAIL_ERROR = 'Электронная почта уже занята.'
+USERNAME_ERROR = 'Имя уже занято, придумайте другое'
+FIELD_MAX_LENGTH = 150
+FIELD_ROLE_LENGTH = 10
+FIELD_EMAIL_LENGTH = 254
+FIELD_CONFIRM_CODE_LENGTH = 150
+FIELD_TOKEN_LENGTH = 255
