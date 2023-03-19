@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from users.models import User
 
@@ -55,7 +56,10 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews'
     )
-    score = models.PositiveSmallIntegerField(
+    score = models.PositiveSmallIntegerField(validators=[
+        MinValueValidator(1, "Минимальная оценка - 1"),
+        MaxValueValidator(10, "Максимальная оценка - 10"),
+    ],
         verbose_name='Рейтинг',
 
     )
@@ -99,3 +103,6 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['pub_date']
+
+    def __str__(self):
+        return self.text
