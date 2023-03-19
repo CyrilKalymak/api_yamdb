@@ -1,24 +1,27 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
 
 from .models import User
 
 
-# Определим описание для встраивания в админку
-class ProfileInlined(admin.TabularInline):
-    model = User
-    can_delete = False
-
-
-# Определим новый вид UserAdmin
-class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInlined,)
-
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+    """ Настройки для Пользователей. """
 
-# Перерегистрируем UserAdmin
-# Это позволит использовать админку с дополнительными полями вместо штатной
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+    list_display = (
+        'username',
+        'first_name',
+        'last_name',
+        'role',
+        'bio',
+        'email'
+    )
+    list_filter = ('username',)
+    search_fields = (
+        'username',
+        'first_name',
+        'last_name',
+        'role',
+        'bio',
+        'email'
+    )
+    empty_value_display = '-пусто-'
