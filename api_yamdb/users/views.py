@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .permissions import IsAdmin
+from api.permissions import IsAdmin
 from users.models import User
 from users.serializers import (GetTokenSerializer, SignUpSerializer,
                                UserSerializer)
