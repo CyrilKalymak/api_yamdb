@@ -16,14 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+# from users import urls as users_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('api.urls')),
     path(
         'redoc/',
         TemplateView.as_view(template_name='redoc.html'),
         name='redoc'
     ),
-    path('', include('api.urls')),
+    path('api/', include('api.urls')),
 ]
