@@ -1,6 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from api_yamdb.users.models import User
+from users.models import User
 
 
 class Category(models.Model):
