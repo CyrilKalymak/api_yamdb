@@ -1,3 +1,4 @@
+import re
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -12,44 +13,105 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = '__all__'
+#        fields = '__all__'
+        exclude = ('id',)
+
+
+    def validate_slug(self, value):
+        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
+        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Проверьте правильноть написания слага.'
+            )
+        return value
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = '__all__'
+#        fields = '__all__'
+        exclude = ('id',)
 
-
-class TitleSerializer(serializers.ModelSerializer):
-    genres = GenreSerializer(many=True)
-
-    class Meta:
-        model = Title
-        fields = '__all__'
-
-    def validate_year(self, value):
-        if value > dt.datetime.now().year:
+    def validate_slug(self, value):
+        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
+        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
             raise serializers.ValidationError(
-                'Проверьте год создания произведения.'
+                'Проверьте правильноть написания слага.'
             )
         return value
 
-    def create(self, validated_data):
-        if 'genres' not in self.initial_data:
-            title = Title.objects.create(**validated_data)
-            return title
-        else:
-            genres = validated_data.pop('genres')
-            title = Title.objects.create(**validated_data)
-            for genre in genres:
-                current_genre, status = Genre.objects.get_or_create(
-                    **genre)
-                GenreTitle.objects.create(
-                    genre=current_genre, title=title)
-            return title
 
+# class TitleSerializer(serializers.ModelSerializer):
+#     genres = GenreSerializer(many=True, read_only=True)
+
+#     class Meta:
+#         model = Title
+#         fields = '__all__'
+
+#     def validate_year(self, value):
+#         if value > dt.datetime.now().year:
+#             raise serializers.ValidationError(
+#                 'Проверьте год создания произведения.'
+#             )
+#         return value
+
+#     def create(self, validated_data):
+#         if 'genres' not in self.initial_data:
+#             title = Title.objects.create(**validated_data)
+#             return title
+#         else:
+#             genres = validated_data.pop('genres')
+#             title = Title.objects.create(**validated_data)
+#             for genre in genres:
+#                 current_genre, status = Genre.objects.get_or_create(
+#                     **genre)
+#                 GenreTitle.objects.create(
+#                     genre=current_genre, title=title)
+#             return title
+
+class TitleGETSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов класса Title при GET запросах."""
+
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов класса Title при небезопасных запросах."""
+
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'name', 'year', 'description', 'genre', 'category')
+
+    def to_representation(self, title):
+        """Определяет какой сериализатор будет использоваться для чтения."""
+        serializer = TitleGETSerializer(title)
+        return serializer.data
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
