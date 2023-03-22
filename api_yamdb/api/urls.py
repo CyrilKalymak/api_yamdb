@@ -3,12 +3,13 @@ from api.views import (CategoryViewSet,
                        TitleViewSet,
                        ReviewViewSet,
                        CommentViewSet)
-# from users.views import SignUp
 from django.urls import include, path
 from rest_framework import routers
 
+from .views import UserViewSet, confirmation_view, signup_view
 
 v1_router = routers.DefaultRouter()
+v1_router.register('users', UserViewSet)
 v1_router.register("titles", TitleViewSet, basename="titles")
 v1_router.register("categories", CategoryViewSet, basename="categories")
 v1_router.register("genres", GenreViewSet, basename="genres")
@@ -22,7 +23,7 @@ v1_router.register(
 )
 
 urlpatterns = [
-    path("v1/", include(v1_router.urls)),
-    path("v1/", include("djoser.urls.jwt")),
-#    path("v1/", include('users.urls'),
+    path('v1/', include(v1_router.urls)),
+    path('v1/auth/signup/', signup_view),
+    path('v1/auth/token/', confirmation_view),
 ]

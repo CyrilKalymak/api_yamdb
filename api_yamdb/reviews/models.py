@@ -1,11 +1,11 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from api_yamdb.users.models import User
+from users.models import User
 
 
 class Category(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -13,7 +13,7 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -22,10 +22,11 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=256)
     year = models.IntegerField()
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, related_name='categories',
                                  on_delete=models.SET_NULL, null=True)
-    genres = models.ManyToManyField(Genre, through='GenreTitle')
+    genre = models.ManyToManyField(Genre, through='GenreTitle',
+                                    related_name='titles')
 
     def __str__(self):
         return self.name
