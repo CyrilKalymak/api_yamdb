@@ -1,8 +1,7 @@
-import re
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+from reviews.models import Category, GenreTitle, Genre, Title, Review, Comment
 from users.models import User
 from .validators import username_validator
 
@@ -13,146 +12,85 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-#        fields = '__all__'
-        exclude = ('id',)
-
-
-    def validate_slug(self, value):
-        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
-        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
-            raise serializers.ValidationError(
-                'Проверьте правильноть написания слага.'
-            )
-        return value
+        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-#        fields = '__all__'
-        exclude = ('id',)
-
-    def validate_slug(self, value):
-        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
-        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
-            raise serializers.ValidationError(
-                'Проверьте правильноть написания слага.'
-            )
-        return value
-
-
-# class TitleSerializer(serializers.ModelSerializer):
-#     genres = GenreSerializer(many=True, read_only=True)
-
-#     class Meta:
-#         model = Title
-#         fields = '__all__'
-
-#     def validate_year(self, value):
-#         if value > dt.datetime.now().year:
-#             raise serializers.ValidationError(
-#                 'Проверьте год создания произведения.'
-#             )
-#         return value
-
-#     def create(self, validated_data):
-#         if 'genres' not in self.initial_data:
-#             title = Title.objects.create(**validated_data)
-#             return title
-#         else:
-#             genres = validated_data.pop('genres')
-#             title = Title.objects.create(**validated_data)
-#             for genre in genres:
-#                 current_genre, status = Genre.objects.get_or_create(
-#                     **genre)
-#                 GenreTitle.objects.create(
-#                     genre=current_genre, title=title)
-#             return title
-
-class TitleGETSerializer(serializers.ModelSerializer):
-    """Сериализатор объектов класса Title при GET запросах."""
-
-    genre = GenreSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True)
-    rating = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category'
-        )
+        fields = '__all__'
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """Сериализатор объектов класса Title при небезопасных запросах."""
-
-    genre = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Genre.objects.all(),
-        many=True
-    )
-    category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all()
-    )
+    genres = GenreSerializer(many=True)
 
     class Meta:
         model = Title
-        fields = (
-            'name', 'year', 'description', 'genre', 'category')
+        fields = '__all__'
 
-    def to_representation(self, title):
-        """Определяет какой сериализатор будет использоваться для чтения."""
-        serializer = TitleGETSerializer(title)
-        return serializer.data
+    def validate_year(self, value):
+        if value > dt.datetime.now().year:
+            raise serializers.ValidationError(
+                'Проверьте год создания произведения.'
+            )
+        return value
+
+    def create(self, validated_data):
+        if 'genres' not in self.initial_data:
+            title = Title.objects.create(**validated_data)
+            return title
+        else:
+            genres = validated_data.pop('genres')
+            title = Title.objects.create(**validated_data)
+            for genre in genres:
+                current_genre, status = Genre.objects.get_or_create(
+                    **genre)
+                GenreTitle.objects.create(
+                    genre=current_genre, title=title)
+            return title
+
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        slug_field="username",
+    title = serializers.SlugRelatedField(
+        slug_field='name',
         read_only=True,
     )
-    title = serializers.SlugRelatedField(
-        slug_field="id",
-        many=False,
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True
+    )
+
+    def validate(self, data):
+        request = self.context['request']
+        author = request.user
+        title_id = self.context['view'].kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        if request.method == 'POST':
+            if Review.objects.filter(title=title, author=author).exists():
+                raise serializers.ValidationError('Вы не можете добавить более'
+                                                  'одного отзыва')
+        return data
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
         read_only=True
     )
 
     class Meta:
-        fields = "__all__"
-        model = Review
-
-    def validate(self, data):
-        if self.context["request"].method != "POST":
-            return data
-        title = get_object_or_404(
-            Title,
-            pk=self.context["view"].kwargs.get("title_id")
-        )
-        author = self.context["request"].user
-        if Review.objects.filter(title_id=title, author=author).exists():
-            raise serializers.ValidationError(
-                "Вы уже оставляли обзор на данное произведение"
-            )
-        return data
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="username"
-    )
-    review = serializers.SlugRelatedField(read_only=True, slug_field="text")
-
-    class Meta:
-        fields = "__all__"
         model = Comment
+        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
