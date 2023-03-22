@@ -7,7 +7,8 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action, api_view
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -30,8 +31,7 @@ from .serializers import (CategorySerializer,
 from rest_framework.pagination import LimitOffsetPagination
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdminOrReadOnly,
-                          IsAdminOrOwnerOrReadOnly,
-                          IsAuthorOrIsModeratorOrAdminOrReadOnly)
+                          IsAdminOrOwnerOrReadOnly)
 from .filters import TitleFilter
 
 
