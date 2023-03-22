@@ -56,12 +56,12 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews'
     )
-    score = models.PositiveSmallIntegerField(validators=[
-        MinValueValidator(1, "Минимальная оценка - 1"),
-        MaxValueValidator(10, "Максимальная оценка - 10"),
-    ],
+    score = models.PositiveSmallIntegerField(
         verbose_name='Рейтинг',
-
+        validators=[
+            MinValueValidator(1, 'Допустимы значения от 1 до 10'),
+            MaxValueValidator(10, 'Допустимы значения от 1 до 10')
+        ]
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
@@ -70,11 +70,13 @@ class Review(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
         ordering = ['pub_date']
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'],
-                name='uniqueConstraint_review'
+                name='unique_review'
             ),
         ]
 
@@ -102,7 +104,6 @@ class Comment(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
         ordering = ['pub_date']
-
-    def __str__(self):
-        return self.text
