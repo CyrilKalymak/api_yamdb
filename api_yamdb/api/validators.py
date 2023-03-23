@@ -22,3 +22,19 @@ def username_validator(value):
              'нельзя использовать в имени')
         )
     return value
+
+def spell_slug(value):
+        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
+        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
+            raise ValidationError(
+                'Проверьте правильноть написания слага.'
+            )
+        if len(value) > 50:
+             raise ValidationError(
+                  'Идентификатор не может быть длинее 50 символов.'
+             )
+        # if value in value.data:
+        #      raise ValidationError(
+        #           'Идентификатор должен быть уникальным.'
+        #      )
+        return value

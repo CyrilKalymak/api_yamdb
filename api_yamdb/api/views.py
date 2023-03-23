@@ -21,7 +21,7 @@ from reviews.models import Category, Genre, Title, Review
 from .serializers import (CategorySerializer,
                           GenreSerializer,
                           TitleSerializer,
-                          TitleGETSerializer,
+                          TitleReadSerializer,
                           ReviewSerializer,
                           CommentSerializer,
                           GetTokenSerializer,
@@ -30,8 +30,7 @@ from .serializers import (CategorySerializer,
 from rest_framework.pagination import LimitOffsetPagination
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdminOrReadOnly,
-                          IsAdminOrOwnerOrReadOnly,
-                          IsAuthorOrIsModeratorOrAdminOrReadOnly)
+                          IsAdminOrOwnerOrReadOnly)
 from .filters import TitleFilter
 
 
@@ -68,7 +67,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         """Определяет какой сериализатор будет использоваться
         для разных типов запроса."""
         if self.request.method == 'GET':
-            return TitleGETSerializer
+            return TitleReadSerializer
         return TitleSerializer
 
 
