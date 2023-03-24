@@ -7,8 +7,7 @@ def send_code(User, email):
     code = default_token_generator.make_token(
         User
     )
-    email_message = f'Код подтверждения: {code}'
-    send_mail(message=email_message,
+    send_mail(message=f'Код подтверждения: {code}',
               subject='Код подтвереждения',
               recipient_list=[email],
               from_email=settings.DEFAULT_FROM_EMAIL)
