@@ -17,6 +17,7 @@ ROLES = (
 class User(AbstractUser):
     """Создание кастомного класса User, описание базовых функций"""
 
+<<<<<<< Updated upstream
     username = models.CharField(
         max_length=settings.FIELD_MAX_LENGTH,
         unique=True,
@@ -30,6 +31,17 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Почта'
     )
+=======
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+
+    ROLES = [
+        (USER, 'user'),
+        (MODERATOR, 'moderator'),
+        (ADMIN, 'admin'),
+    ]
+>>>>>>> Stashed changes
 
     bio = models.TextField(
         null=True,
@@ -39,7 +51,11 @@ class User(AbstractUser):
     )
 
     role = models.CharField(
+<<<<<<< Updated upstream
         max_length=max([len(role) for role, name in ROLES]),
+=======
+        max_length=50,
+>>>>>>> Stashed changes
         choices=ROLES,
         default=USER,
         verbose_name='Роль пользователя'
@@ -54,7 +70,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
+<<<<<<< Updated upstream
         return self.role == ADMIN or self.is_staff
+=======
+        return self.role == self.ADMIN or self.is_staff
+>>>>>>> Stashed changes
 
     def __str__(self):
         return self.username
