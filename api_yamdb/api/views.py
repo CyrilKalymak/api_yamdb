@@ -188,6 +188,3 @@ def confirmation_view(request):
     token = str(RefreshToken.for_user(user).access_token)
     response = {'token': token}
     return Response(response, status=HTTPStatus.OK)
-
-
-123
