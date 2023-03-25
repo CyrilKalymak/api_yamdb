@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from rest_framework.validators import UniqueValidator
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment
 
 from users.models import User
 from .validators import username_validator, spell_slug
@@ -13,16 +13,14 @@ import datetime as dt
 import re
 
 
-
 class GenreSerializer(serializers.ModelSerializer):
-    slug = serializers.SlugField(validators=[UniqueValidator(queryset=Genre.objects.all()),
-                                             spell_slug])
+    slug = serializers.SlugField(validators=[
+                                 UniqueValidator(queryset=Genre.objects.all()),
+                                 spell_slug])
 
     class Meta:
         model = Genre
         exclude = ('id',)
-
-
 
     def validate_slug(self, value):
         re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
@@ -33,10 +31,10 @@ class GenreSerializer(serializers.ModelSerializer):
         return value
 
 
-
 class CategorySerializer(serializers.ModelSerializer):
-    slug = serializers.SlugField(validators=[UniqueValidator(queryset=Category.objects.all()),
-                                             spell_slug])
+    slug = serializers.SlugField(
+        validators=[UniqueValidator(queryset=Category.objects.all()),
+                    spell_slug])
 
     class Meta:
         model = Category
@@ -45,7 +43,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     """Сериализатор объектов класса Title при запросах на чтение."""
-
 
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
@@ -73,7 +70,7 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'name', 'year', 'description', 'genre', 'category')
-        
+
     def validate_year(self, value):
         if value < 0 or value > dt.datetime.now().year:
             raise serializers.ValidationError(
@@ -152,10 +149,6 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=settings.FIELD_MAX_LENGTH,
                                      validators=[username_validator])
 
-    class Meta:
-        model = User
-        fields = ('email', 'username')
-
 
 class GetTokenSerializer(serializers.Serializer):
     """Сериализатор для получения токена."""
@@ -165,10 +158,3 @@ class GetTokenSerializer(serializers.Serializer):
     )
     confirmation_code = serializers.CharField(
         max_length=settings.FIELD_TOKEN_LENGTH, write_only=True)
-
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'confirmation_code'
-        )

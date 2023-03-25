@@ -1,19 +1,21 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-from users.models import User
-from api.validators import spell_slug
-
 import datetime as dt
 
-class Category(models.Model):
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
+from users.models import User
+from api.validators import spell_slug
+from api_yamdb.settings import MIN_SCORE, MAX_SCORE
+
+
+class Category(models.Model):
     name = models.CharField(max_length=256,
                             verbose_name='Название категории')
     slug = models.SlugField(max_length=50,
                             verbose_name='Идентификатор категории',
                             unique=True,
                             validators=[spell_slug])
-    
+
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
@@ -28,8 +30,8 @@ class Genre(models.Model):
     slug = models.SlugField(max_length=50,
                             verbose_name='Идентификатор жанра',
                             unique=True,
-                           validators=[spell_slug])
-    
+                            validators=[spell_slug])
+
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -41,28 +43,24 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=256,
                             verbose_name='Название произведения')
-    year = models.PositiveIntegerField(verbose_name='год выпуска',
-        validators=[
-            MinValueValidator(
-                0, message='Год не может быть отрицательным.'
-            ),
-            MaxValueValidator(
-                int(dt.datetime.now().year),
-                message='Произведение нельзя создать в будущем году.'
-            )
-        ],
+    year = models.PositiveIntegerField(validators=[
+        MinValueValidator(
+            MIN_SCORE, message='Год не может быть отрицательным.'),
+        MaxValueValidator(
+            int(dt.datetime.now().year),
+            message='Произведение нельзя создать в будущем году.')],
+        verbose_name='Название произведения',
         db_index=True)
     description = models.TextField(verbose_name='Описание произведения',
                                    blank=True, null=True)
     category = models.ForeignKey(Category, related_name='categories',
                                  on_delete=models.SET_NULL, null=True)
     genre = models.ManyToManyField(Genre, through='GenreTitle',
-                                    related_name='titles')
-    
+                                   related_name='titles')
+
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-
 
     def __str__(self):
         return self.name
@@ -94,8 +92,8 @@ class Review(models.Model):
         related_name='reviews'
     )
     score = models.PositiveSmallIntegerField(validators=[
-        MinValueValidator(1, "Минимальная оценка - 1"),
-        MaxValueValidator(10, "Максимальная оценка - 10"),
+        MinValueValidator(MIN_SCORE, "Минимальная оценка - 1"),
+        MaxValueValidator(MAX_SCORE, "Максимальная оценка - 10"),
     ],
         verbose_name='Рейтинг',
 
@@ -107,6 +105,8 @@ class Review(models.Model):
     )
 
     class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
         ordering = ['pub_date']
         constraints = [
             models.UniqueConstraint(
@@ -139,6 +139,8 @@ class Comment(models.Model):
     )
 
     class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
         ordering = ['pub_date']
 
     def __str__(self):

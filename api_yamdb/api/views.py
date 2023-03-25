@@ -12,7 +12,7 @@ from rest_framework.pagination import (LimitOffsetPagination,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework.views import APIView
 from rest_framework import filters, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -31,7 +31,8 @@ from .serializers import (CategorySerializer,
 from rest_framework.pagination import LimitOffsetPagination
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdminOrReadOnly,
-                          IsAdminOrOwnerOrReadOnly)
+                          IsAdminOrOwnerOrReadOnly,
+                          IsAuthorOrIsModeratorOrAdminOrReadOnly)
 from .filters import TitleFilter
 
 
@@ -100,6 +101,35 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
+class SignUp(APIView):
+    """Вьюкласс для регистрации пользователей."""
+
+    permission_classes = (IsAuthorOrIsModeratorOrAdminOrReadOnly, )
+
+    def post(self, request):
+        serializer = SignUpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
+        try:
+            newuser = User.objects.get_or_create(
+                username=username,
+                email=email,)
+        except IntegrityError:
+            error = settings.USERNAME_ERROR if User.objects.filter(
+                username=username).exists() else settings.EMAIL_ERROR
+            return Response(error, status=HTTPStatus.BAD_REQUEST)
+        confirmation_code = default_token_generator.make_token(newuser)
+        send_mail(
+            subject='Код подтверждения',
+            message=f'Регистрация прошла успешно! '
+                    f'Код подтверждения: {confirmation_code}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False)
+        return Response(serializer.data, status=HTTPStatus.OK)
+
+
 @api_view(['POST'])
 def signup_view(request):
     """Функция для получения кода авторизации на почту."""
@@ -108,7 +138,7 @@ def signup_view(request):
     email = serializer.validated_data['email']
     username = serializer.validated_data['username']
     try:
-        new_user, created = User.objects.get_or_create(
+        new_user, = User.objects.get_or_create(
             username=username,
             email=email,
         )
@@ -173,3 +203,22 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save(role=user.role)
             return Response(serializer.data,
                             status=HTTPStatus.OK)
+
+
+@api_view(['POST'])
+def confirmation_view(request):
+    """Функция для получения токена."""
+    serializer = GetTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    code = serializer.validated_data.get('confirmation_code')
+    username = serializer.validated_data.get('username')
+    user = get_object_or_404(User, username=username)
+    if not default_token_generator.check_token(user, code):
+        response = {'Неверный код'}
+        return Response(response, status=HTTPStatus.BAD_REQUEST)
+    token = str(RefreshToken.for_user(user).access_token)
+    response = {'token': token}
+    return Response(response, status=HTTPStatus.OK)
+
+
+123
