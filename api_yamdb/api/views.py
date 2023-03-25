@@ -101,61 +101,30 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-class SignUp(APIView):
-    """Вьюкласс для регистрации пользователей."""
-
-    permission_classes = (IsAuthorOrIsModeratorOrAdminOrReadOnly, )
-
-    def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
-        username = serializer.validated_data['username']
-        try:
-            newuser = User.objects.get_or_create(
-                username=username,
-                email=email,)
-        except IntegrityError:
-            error = settings.USERNAME_ERROR if User.objects.filter(
-                username=username).exists() else settings.EMAIL_ERROR
-            return Response(error, status=HTTPStatus.BAD_REQUEST)
-        confirmation_code = default_token_generator.make_token(newuser)
-        send_mail(
-            subject='Код подтверждения',
-            message=f'Регистрация прошла успешно! '
-                    f'Код подтверждения: {confirmation_code}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False)
-        return Response(serializer.data, status=HTTPStatus.OK)
-
-
-@api_view(['POST'])
-def signup_view(request):
+@api_view(['POST']) 
+def signup_view(request): 
     """Функция для получения кода авторизации на почту."""
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
     username = serializer.validated_data['username']
     try:
-        new_user, = User.objects.get_or_create(
+        newuser, created = User.objects.get_or_create(
             username=username,
-            email=email,
-        )
+            email=email,)
     except IntegrityError:
         error = settings.USERNAME_ERROR if User.objects.filter(
             username=username).exists() else settings.EMAIL_ERROR
-        return Response(error, status=HTTPStatus.BAD_REQUEST)
-
-    confirmation_code = default_token_generator.make_token(new_user)
+        return Response(error, status.HTTP_400_BAD_REQUEST)
+        
+    confirmation_code = default_token_generator.make_token(newuser)
     send_mail(
         subject='Код подтверждения',
         message=f'Регистрация прошла успешно! '
                 f'Код подтверждения: {confirmation_code}',
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[email],
-        fail_silently=False
-    )
+        fail_silently=False)
     return Response(serializer.data, status=HTTPStatus.OK)
 
 
