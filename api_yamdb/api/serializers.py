@@ -1,13 +1,17 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
 from rest_framework.validators import UniqueValidator
 from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+
 from users.models import User
 from .validators import username_validator, spell_slug
 
+
 import datetime as dt
 import re
+
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -17,6 +21,17 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         exclude = ('id',)
+
+
+
+    def validate_slug(self, value):
+        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
+        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Проверьте правильноть написания слага.'
+            )
+        return value
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -30,6 +45,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     """Сериализатор объектов класса Title при запросах на чтение."""
+
 
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
@@ -69,6 +85,7 @@ class TitleSerializer(serializers.ModelSerializer):
         """Определяет какой сериализатор будет использоваться для чтения."""
         serializer = TitleReadSerializer(title)
         return serializer.data
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
