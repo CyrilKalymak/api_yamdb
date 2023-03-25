@@ -22,7 +22,7 @@ from reviews.models import Category, Genre, Title, Review
 from .serializers import (CategorySerializer,
                           GenreSerializer,
                           TitleSerializer,
-                          TitleGETSerializer,
+                          TitleReadSerializer,
                           ReviewSerializer,
                           CommentSerializer,
                           GetTokenSerializer,
@@ -68,7 +68,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         """Определяет какой сериализатор будет использоваться
         для разных типов запроса."""
         if self.request.method == 'GET':
-            return TitleGETSerializer
+            return TitleReadSerializer
         return TitleSerializer
 
 
