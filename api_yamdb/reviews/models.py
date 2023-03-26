@@ -8,7 +8,6 @@ from api_yamdb.settings import MIN_SCORE, MAX_SCORE
 from users.models import User
 
 
-
 class Category(models.Model):
     name = models.CharField(max_length=256,
                             verbose_name='Название категории')
