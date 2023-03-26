@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from api.validators import username_validator
+
 
 class User(AbstractUser):
     """Создание кастомного класса User, описание базовых функций"""
@@ -15,6 +17,19 @@ class User(AbstractUser):
         (ADMIN, 'admin'),
     ]
 
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[username_validator],
+        verbose_name='Никнейм'
+    )
+
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        verbose_name='Почта'
+
+    )
     bio = models.TextField(
         null=True,
         blank=True,
