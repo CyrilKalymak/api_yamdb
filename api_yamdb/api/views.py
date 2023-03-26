@@ -1,10 +1,13 @@
 from http import HTTPStatus
-from django.db.models import Avg
-from django.conf import settings
+
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.conf import settings
 from django.db import IntegrityError
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import (LimitOffsetPagination,
@@ -12,12 +15,14 @@ from rest_framework.pagination import (LimitOffsetPagination,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.views import APIView
-from rest_framework import filters, viewsets
-from django_filters.rest_framework import DjangoFilterBackend
 
-from api.permissions import IsAdmin
+
+from .filters import TitleFilter
+from .mixins import CreateListDestroyViewSet
 from users.models import User
+from .permissions import (IsAdmin,
+                          IsAdminOrReadOnly,
+                          IsAdminOrOwnerOrReadOnly,)
 from reviews.models import Category, Genre, Title, Review
 from .serializers import (CategorySerializer,
                           GenreSerializer,
@@ -28,12 +33,7 @@ from .serializers import (CategorySerializer,
                           GetTokenSerializer,
                           SignUpSerializer,
                           UserSerializer)
-from rest_framework.pagination import LimitOffsetPagination
-from .mixins import CreateListDestroyViewSet
-from .permissions import (IsAdminOrReadOnly,
-                          IsAdminOrOwnerOrReadOnly,
-                          IsAuthorOrIsModeratorOrAdminOrReadOnly)
-from .filters import TitleFilter
+from users.models import User
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
@@ -101,8 +101,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-@api_view(['POST']) 
-def signup_view(request): 
+@api_view(['POST'])
+def signup_view(request):
     """Функция для получения кода авторизации на почту."""
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -115,8 +115,8 @@ def signup_view(request):
     except IntegrityError:
         error = settings.USERNAME_ERROR if User.objects.filter(
             username=username).exists() else settings.EMAIL_ERROR
-        return Response(error, status.HTTP_400_BAD_REQUEST)
-        
+        return Response(error, status=HTTPStatus.BAD_REQUEST)
+
     confirmation_code = default_token_generator.make_token(newuser)
     send_mail(
         subject='Код подтверждения',
@@ -188,6 +188,3 @@ def confirmation_view(request):
     token = str(RefreshToken.for_user(user).access_token)
     response = {'token': token}
     return Response(response, status=HTTPStatus.OK)
-
-
-123
