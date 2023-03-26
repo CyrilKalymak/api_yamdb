@@ -3,9 +3,10 @@ import datetime as dt
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from users.models import User
 from api.validators import spell_slug
 from api_yamdb.settings import MIN_SCORE, MAX_SCORE
+from users.models import User
+
 
 
 class Category(models.Model):
