@@ -1,5 +1,19 @@
-from api_yamdb.users.models import User
+import csv
+import os
 
+from django.core.management import BaseCommand
+from django.db import IntegrityError
+
+from api_yamdb.settings import CSV_FILES_DIR
+from api_yamdb.users.models import User
+from reviews.models import (
+    Category,
+    Comment,
+    Genre,
+    GenreTitle,
+    Review,
+    Title
+)
 
 FILES_CLASSES = {
     'category': Category,
@@ -63,7 +77,9 @@ def load_csv(file_name, class_name):
 
 
 class Command(BaseCommand):
-    """Класс загрузки тестовой базы данных."""
 
-con.commit()
-con.close()
+    """Класс загрузки тестовой базы данных."""
+    def handle(self, *args, **options):
+        for key, value in FILES_CLASSES.items():
+            print(f'Загрузка таблицы {value.__qualname__}')
+            load_csv(key, value)
