@@ -1,8 +1,6 @@
 import os
-
-from pathlib import Path
 from datetime import timedelta
-
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,11 +25,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-    'djoser',
     'api',
     'reviews',
-    'users.apps.UsersConfig',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +94,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
@@ -145,3 +143,5 @@ FIELD_ROLE_LENGTH = 10
 FIELD_EMAIL_LENGTH = 254
 FIELD_CONFIRM_CODE_LENGTH = 150
 FIELD_TOKEN_LENGTH = 255
+MAX_SCORE = 10
+MIN_SCORE = 1

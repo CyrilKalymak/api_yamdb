@@ -1,8 +1,7 @@
+from api.permissions import IsAdminOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
-
-from api.permissions import IsAdminOrReadOnly
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,

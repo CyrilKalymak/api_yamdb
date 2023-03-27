@@ -1,5 +1,6 @@
-from rest_framework_simplejwt.tokens import RefreshToken
 from uuid import uuid1
+
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 def generate_user_confirm_code() -> str:
