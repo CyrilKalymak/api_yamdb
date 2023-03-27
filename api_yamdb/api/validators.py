@@ -32,9 +32,12 @@ def spell_slug(value):
     if len(value) > 50:
         raise ValidationError(
               'Идентификатор не может быть длинее 50 символов.')
-
-        # if value in value.data:
-        #      raise ValidationError(
-        #           'Идентификатор должен быть уникальным.'
-        #      )
         return value
+
+
+def title_year(value):
+    if value < 0 or value > dt.datetime.now().year:
+        raise ValidationError(
+            'Проверьте год создания произведения.'
+        )
+    return value
