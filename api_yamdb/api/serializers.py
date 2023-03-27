@@ -7,7 +7,7 @@ from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Review, Comment
 from users.models import User
-from .validators import username_validator, spell_slug
+from .validators import username_validator, spell_slug, title_year
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -62,18 +62,12 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Category.objects.all()
     )
+    year = serializers.IntegerField(validators=[title_year])
 
     class Meta:
         model = Title
         fields = (
             'name', 'year', 'description', 'genre', 'category')
-
-    def validate_year(self, value):
-        if value < 0 or value > dt.datetime.now().year:
-            raise serializers.ValidationError(
-                'Проверьте год создания произведения.'
-            )
-        return value
 
     def to_representation(self, title):
         """Определяет какой сериализатор будет использоваться для чтения."""
