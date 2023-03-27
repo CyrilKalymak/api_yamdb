@@ -3,7 +3,7 @@ import datetime as dt
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api.validators import spell_slug
+from api.validators import spell_slug, title_year
 from api_yamdb.settings import MIN_SCORE, MAX_SCORE
 from users.models import User
 
@@ -43,14 +43,11 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=256,
                             verbose_name='Название произведения')
-    year = models.PositiveIntegerField(validators=[
-        MinValueValidator(
-            MIN_SCORE, message='Год не может быть отрицательным.'),
-        MaxValueValidator(
-            int(dt.datetime.now().year),
-            message='Произведение нельзя создать в будущем году.')],
+    year = models.PositiveIntegerField(
+        validators=[title_year],
         verbose_name='Название произведения',
-        db_index=True)
+        db_index=True
+    )
     description = models.TextField(verbose_name='Описание произведения',
                                    blank=True, null=True)
     category = models.ForeignKey(Category, related_name='categories',
@@ -67,9 +64,15 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL,
+    genre = models.ForeignKey(Genre, verbose_name='жанр',
+                              on_delete=models.SET_NULL,
                               null=True)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, verbose_name='произведение',
+                              on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведения'
 
     def __str__(self):
         return f'{self.title}: {self.genre}'
