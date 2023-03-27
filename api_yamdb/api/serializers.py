@@ -1,4 +1,3 @@
-import datetime as dt
 import re
 from django.conf import settings
 from django.shortcuts import get_object_or_404
