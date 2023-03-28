@@ -93,8 +93,8 @@ class Review(models.Model):
         related_name='reviews'
     )
     score = models.PositiveSmallIntegerField(validators=[
-        MinValueValidator(MIN_SCORE, "Минимальная оценка - 1"),
-        MaxValueValidator(MAX_SCORE, "Максимальная оценка - 10"),
+        MinValueValidator(MIN_SCORE, f"Минимальная оценка - {MIN_SCORE}"),
+        MaxValueValidator(MAX_SCORE, f"Максимальная оценка - {MAX_SCORE}"),
     ],
         verbose_name='Рейтинг',
 
