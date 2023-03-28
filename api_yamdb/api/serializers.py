@@ -19,14 +19,6 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         exclude = ('id',)
 
-    def validate_slug(self, value):
-        re.fullmatch(r'^[-a-zA-Z0-9_]+$', value)
-        if not re.fullmatch(r'^[-a-zA-Z0-9_]+$', value):
-            raise serializers.ValidationError(
-                'Проверьте правильноть написания слага.'
-            )
-        return value
-
 
 class CategorySerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(
